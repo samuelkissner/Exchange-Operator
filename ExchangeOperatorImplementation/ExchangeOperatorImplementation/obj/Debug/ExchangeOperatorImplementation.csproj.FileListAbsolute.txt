@@ -12,3 +12,4 @@ D:\UNO_CS_Class_Assignments\Adv_Topics_DBMS\Exchange-Operator\ExchangeOperatorIm
 D:\UNO_CS_Class_Assignments\Adv_Topics_DBMS\Exchange-Operator\ExchangeOperatorImplementation\ExchangeOperatorImplementation\bin\Debug\System.Data.SQLite.dll.config
 D:\UNO_CS_Class_Assignments\Adv_Topics_DBMS\Exchange-Operator\ExchangeOperatorImplementation\ExchangeOperatorImplementation\obj\Debug\ExchangeOperatorImplementation.csproj.CopyComplete
 D:\UNO_CS_Class_Assignments\Adv_Topics_DBMS\Exchange-Operator\ExchangeOperatorImplementation\ExchangeOperatorImplementation\bin\Debug\Node1_DB.db
+D:\UNO_CS_Class_Assignments\Adv_Topics_DBMS\Exchange-Operator\ExchangeOperatorImplementation\ExchangeOperatorImplementation\bin\Debug\Node2_DB.db

@@ -7,9 +7,14 @@ namespace ExchangeOperatorImplementation
     {
         static void Main(string[] args)
         {
-            String[] DatabaseConnectionIDs = { "Node1_DB", "Node2_DB" };
-            ExchangeOperator xcgh = new ExchangeOperator(DatabaseConnectionIDs);
+            //ToolBox tb1 = new ToolBox("Node1_DB");
+            //ToolBox tb2 = new ToolBox("Node2_DB");
 
+            
+            String[] DatabaseConnectionIDs = { "Node1_DB", "Node2_DB" };
+            ExchangeOperator xchg = new ExchangeOperator(DatabaseConnectionIDs);
+            xchg.HashPartition();
+           
         }
 
     }
@@ -18,29 +23,37 @@ namespace ExchangeOperatorImplementation
    
     class ExchangeOperator
     {
-    
+        //ids for the database connections listed in App.config
         String[] DatabaseConnectionIDs;
+        //temporary data structure to hold all records retrieved from the various databases (the nodes) prior to repartition
         List<ToolModel> tools = new List<ToolModel>();
 
-
+        //constructor
         public ExchangeOperator(String[] DatabaseConnectionIDs)
-        {
+        {   
             this.DatabaseConnectionIDs = DatabaseConnectionIDs;
 
+            //retrieve all records from databases and add to tools. 
             foreach (String DBConnectionID in DatabaseConnectionIDs)
             {
                 tools.AddRange(SqliteDataAccess.LoadTool(DBConnectionID));
+                SqliteDataAccess.ClearTable(DBConnectionID);
             }
 
             ToolBox.PrintToolBoxContents(tools);
 
         }
 
-        //purpose - repartition data in nodes based on hash function   
+        //purpose - repartition data in nodes based on hash function h = id mod n
         public void HashPartition()
         {
-
-     
+            //number of nodes/databases
+            int n = DatabaseConnectionIDs.Length;
+            //go through each tool and add to appropirate partition/database/node
+            foreach (ToolModel tool in tools)
+            {
+                SqliteDataAccess.SaveTool(tool, this.DatabaseConnectionIDs[tool.ID % n]);
+            }
         }
 
         /*

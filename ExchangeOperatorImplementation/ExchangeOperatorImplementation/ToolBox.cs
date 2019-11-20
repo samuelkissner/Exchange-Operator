@@ -12,7 +12,7 @@ namespace ExchangeOperatorImplementation
 
         public  ToolBox(String id)
         {
-            //AddTools(id);
+            AddTools(id);
             LoadToolBox(id);
         }
 
@@ -40,19 +40,19 @@ namespace ExchangeOperatorImplementation
         {
             if (id == "Node1_DB")
             {
-                SqliteDataAccess.SaveTool(new ToolModel { ToolName = "Hammer", Quantity = 3 }, id);
-                SqliteDataAccess.SaveTool(new ToolModel { ToolName = "Phillips-head Screwdriver", Quantity = 4 }, id);
-                SqliteDataAccess.SaveTool(new ToolModel { ToolName = "Flat-head Screwdriver", Quantity = 1 }, id);
-                SqliteDataAccess.SaveTool(new ToolModel { ToolName = "Allen Wrench", Quantity = 30 }, id);
-                SqliteDataAccess.SaveTool(new ToolModel { ToolName = "Pliers", Quantity = 5 }, id);
+                SqliteDataAccess.SaveTool(new ToolModel { ID = 1, ToolName = "Hammer", Quantity = 3 }, id);
+                SqliteDataAccess.SaveTool(new ToolModel { ID = 2, ToolName = "Phillips-head Screwdriver", Quantity = 4 }, id);
+                SqliteDataAccess.SaveTool(new ToolModel { ID = 3, ToolName = "Flat-head Screwdriver", Quantity = 1 }, id);
+                SqliteDataAccess.SaveTool(new ToolModel { ID = 4, ToolName = "Allen Wrench", Quantity = 30 }, id);
+                SqliteDataAccess.SaveTool(new ToolModel { ID = 5, ToolName = "Pliers", Quantity = 5 }, id);
             }
             else if (id == "Node2_DB")
             {
-                SqliteDataAccess.SaveTool(new ToolModel { ToolName = "Level", Quantity = 5 }, id);
-                SqliteDataAccess.SaveTool(new ToolModel { ToolName = "Saw", Quantity = 2 }, id);
-                SqliteDataAccess.SaveTool(new ToolModel { ToolName = "Socket Wrench", Quantity = 0 }, id);
-                SqliteDataAccess.SaveTool(new ToolModel { ToolName = "Drill", Quantity = 9 }, id);
-                SqliteDataAccess.SaveTool(new ToolModel { ToolName = "Goggles", Quantity = 9 }, id);
+                SqliteDataAccess.SaveTool(new ToolModel { ID = 6, ToolName = "Level", Quantity = 5 }, id);
+                SqliteDataAccess.SaveTool(new ToolModel { ID = 7, ToolName = "Saw", Quantity = 2 }, id);
+                SqliteDataAccess.SaveTool(new ToolModel { ID = 8, ToolName = "Socket Wrench", Quantity = 0 }, id);
+                SqliteDataAccess.SaveTool(new ToolModel { ID = 9, ToolName = "Drill", Quantity = 9 }, id);
+                SqliteDataAccess.SaveTool(new ToolModel { ID = 10, ToolName = "Goggles", Quantity = 9 }, id);
             }
         }
 

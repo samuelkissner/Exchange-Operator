@@ -25,13 +25,22 @@ namespace ExchangeOperatorImplementation
         {
             using (IDbConnection cnn = new SQLiteConnection(LoadConnectionString(id)))
             {
-                cnn.Execute("insert into Tool (ToolName, Quantity) values (@ToolName, @Quantity)", tool);
+                cnn.Execute("insert into Tool (ID,ToolName, Quantity) values (@ID, @ToolName, @Quantity)", tool);
             }
         }
 
         private static string LoadConnectionString(string id)
         {
             return ConfigurationManager.ConnectionStrings[id].ConnectionString;
+        }
+
+        //purpose: remove all records from a table.
+        public static void ClearTable(string id)
+        {
+            using (IDbConnection cnn = new SQLiteConnection(LoadConnectionString(id)))
+            {
+                cnn.Execute("delete from Tool", new DynamicParameters());
+            }
         }
     }
 }
