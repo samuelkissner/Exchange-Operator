@@ -12,6 +12,17 @@ namespace ExchangeOperatorImplementation
 {
     public class SqliteDataAccess
     {
+
+
+        public static List<ToolModel> ExecuteQuery(string id, string qry)
+        {
+            using (IDbConnection cnn = new SQLiteConnection(LoadConnectionString(id)))
+            {
+                var output = cnn.Query<ToolModel>(qry, new DynamicParameters());
+                return output.ToList();
+            }
+        }
+
         public static List<ToolModel> LoadTool(string id)
         {
             using (IDbConnection cnn = new SQLiteConnection(LoadConnectionString(id)))

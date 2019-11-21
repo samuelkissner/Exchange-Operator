@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ExchangeOperatorImplementation
 {
@@ -11,10 +13,11 @@ namespace ExchangeOperatorImplementation
             //ToolBox tb2 = new ToolBox("Node2_DB");
 
             
+            
             String[] DatabaseConnectionIDs = { "Node1_DB", "Node2_DB" };
             ExchangeOperator xchg = new ExchangeOperator(DatabaseConnectionIDs);
-            xchg.HashPartition();
-           
+            xchg.ExecuteQuery("select * from Tool");
+            
         }
 
     }
@@ -25,13 +28,20 @@ namespace ExchangeOperatorImplementation
     {
         //ids for the database connections listed in App.config
         String[] DatabaseConnectionIDs;
+        //array of threads
+        Thread[] Threads;
+        //query results from the various partitions
+        List<ToolModel>[] QueryResults;
         //temporary data structure to hold all records retrieved from the various databases (the nodes) prior to repartition
         List<ToolModel> tools = new List<ToolModel>();
+
 
         //constructor
         public ExchangeOperator(String[] DatabaseConnectionIDs)
         {   
             this.DatabaseConnectionIDs = DatabaseConnectionIDs;
+            this.QueryResults = new List<ToolModel>[DatabaseConnectionIDs.Length];
+            this.Threads = new Thread[DatabaseConnectionIDs.Length];
 
             //retrieve all records from databases and add to tools. 
             foreach (String DBConnectionID in DatabaseConnectionIDs)
@@ -39,8 +49,6 @@ namespace ExchangeOperatorImplementation
                 tools.AddRange(SqliteDataAccess.LoadTool(DBConnectionID));
                 SqliteDataAccess.ClearTable(DBConnectionID);
             }
-
-            ToolBox.PrintToolBoxContents(tools);
 
         }
 
@@ -56,28 +64,13 @@ namespace ExchangeOperatorImplementation
             }
         }
 
-        /*
+        
         //purpose - repartition data in nodes based on data range
-        public void RangePartition(s)
+        public void RangePartition()
         {
-            //add all node data to a single temporary list
-            foreach (Node node in nodes)
-                temp.AddRange(node.data);
+           
 
-            //sort the list based on the partitioning attribute
-            temp.Sort();
-
-            //determine the ideal distribution of data between nodes (to avoid skew)
-            int idealDistribution = temp.Count / nodes.Length;
-
-            //partition data evenly between each node
-            foreach (Node node in nodes) {
-                node.data.Clear();
-
-            }
         }
-
-      */
         //purpose - copy data from one node to other nodes
         public void Broadcasting()
         {
@@ -85,11 +78,43 @@ namespace ExchangeOperatorImplementation
         }
 
         //purpose - send data from all nodes to a single node
-        public void SendAllData()
+        public void SendAll()
         {
 
         }
 
+        //purpose: partition data, then execute query (as a separate thread) on each parition
+        //resuts:
+        public void ExecuteQuery(string qry)
+        {
+            //partition data
+            HashPartition();
+            for(int i = 0; i < this.DatabaseConnectionIDs.Length; i++)
+            {
+                int index = i;
+                this.Threads[i]= new Thread(() => { QueryResults[index] = ExecuteQueryOnPartition(this.DatabaseConnectionIDs[index], qry); });
+                Threads[i].Start();
+                
+            }
+
+            for (int i = 0; i < this.DatabaseConnectionIDs.Length; i++)
+            {
+              
+                Threads[i].Join();
+
+            }
+
+            Console.WriteLine("Donzo");
+        }
+
+        //Purpose: execute a qry on partition and store the results
+        // each parition will be executed in its own thread
+        public List<ToolModel> ExecuteQueryOnPartition(string id, string qry)
+        {
+
+          return SqliteDataAccess.ExecuteQuery(id, qry);
+            
+        }
 
     }
     

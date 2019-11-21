@@ -20,7 +20,7 @@ namespace ExchangeOperatorImplementation
         {
             tools = SqliteDataAccess.LoadTool(id); 
 
-            PrintToolBoxContents(tools);
+            //PrintToolBoxContents(tools);
         }
 
        
