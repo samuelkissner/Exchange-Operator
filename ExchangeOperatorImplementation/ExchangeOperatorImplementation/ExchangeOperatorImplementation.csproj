@@ -53,7 +53,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="SqliteDataAccess.cs" />
-    <Compile Include="ToolBox.cs" />
+    <Compile Include="RecordModels.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

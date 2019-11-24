@@ -14,29 +14,54 @@ namespace ExchangeOperatorImplementation
     {
 
 
-        public static List<ToolModel> ExecuteQuery(string id, string qry)
+        public static List<string[]> ExecuteQuery(string database_id, string sql)
         {
-            using (IDbConnection cnn = new SQLiteConnection(LoadConnectionString(id)))
+            List<string[]> resultList = new List<string[]>();
+            
+            using (SQLiteConnection cnn = new SQLiteConnection(LoadConnectionString(database_id)))
             {
-                var output = cnn.Query<ToolModel>(qry, new DynamicParameters());
+                cnn.Open();
+                using (SQLiteCommand fmd = cnn.CreateCommand())
+                {
+                    fmd.CommandText = "select * from Tool, LineItem where Tool.Tool_ID = LineItem.Tool_ID";
+                    fmd.CommandType = CommandType.Text;
+                    SQLiteDataReader r = fmd.ExecuteReader();
+                    while (r.Read())
+                    {
+
+                        string[] row = new string[6];
+                        row[0] = r["LineItem_ID"].ToString();
+                        row[1] = r["Tool_ID"].ToString();
+                        row[2] = r["ToolName"].ToString();
+                        row[3] = r["Price"].ToString();
+                        row[4] = r["Purchase_Quantity"].ToString();
+                        row[5] = r["Inventory_Quantity"].ToString();
+                        resultList.Add(row);
+                    }
+                }
+            }
+            return resultList;
+        }
+                
+            
+            
+
+            
+
+        public static List<T> LoadRecords<T>(string database_id, string sql)
+        {
+            using (IDbConnection cnn = new SQLiteConnection(LoadConnectionString(database_id)))
+            {
+                var output = cnn.Query<T>(sql, new DynamicParameters());
                 return output.ToList();
             }
         }
 
-        public static List<ToolModel> LoadTool(string id)
+        public static void SaveRecord<T>(T record, string database_id, string sql)
         {
-            using (IDbConnection cnn = new SQLiteConnection(LoadConnectionString(id)))
+            using (IDbConnection cnn = new SQLiteConnection(LoadConnectionString(database_id)))
             {
-                var output = cnn.Query<ToolModel>("select * from Tool", new DynamicParameters());
-                return output.ToList();
-            }
-        }
-
-        public static void SaveTool(ToolModel tool, string id)
-        {
-            using (IDbConnection cnn = new SQLiteConnection(LoadConnectionString(id)))
-            {
-                cnn.Execute("insert into Tool (ID,ToolName, Quantity) values (@ID, @ToolName, @Quantity)", tool);
+                cnn.Execute(sql, record);
             }
         }
 
@@ -46,11 +71,11 @@ namespace ExchangeOperatorImplementation
         }
 
         //purpose: remove all records from a table.
-        public static void ClearTable(string id)
+        public static void ClearTable(string id, string sql)
         {
             using (IDbConnection cnn = new SQLiteConnection(LoadConnectionString(id)))
             {
-                cnn.Execute("delete from Tool", new DynamicParameters());
+                cnn.Execute(sql, new DynamicParameters());
             }
         }
     }
