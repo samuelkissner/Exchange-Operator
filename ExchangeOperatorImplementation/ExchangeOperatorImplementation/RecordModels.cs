@@ -4,54 +4,7 @@ using System.Collections.Generic;
 
 namespace ExchangeOperatorImplementation
 {
-    class SampleRecords
-    {
-        IRecordRepository<Tool> repository = new ToolServiceRepository();
-        IRecordRepository<LineItem> repository2 = new LineItemServiceRepository();
-        
-
-        public void RemoveSampleRecords(String database_id)
-        {
-            repository.ClearTable<Tool>(database_id);
-            repository2.ClearTable<LineItem>(database_id);
-        }
-
-        public void AddSampleRecords(String database_id)
-        {
-            if (database_id == "Node1_DB")
-            {
-                //add sample Tool records to the first database
-                repository.SaveRecord<Tool>(new Tool { Tool_ID = 1, ToolName = "Hammer", Inventory_Quantity = 3 }, database_id);
-                repository.SaveRecord<Tool>(new Tool { Tool_ID = 2, ToolName = "Phillips-head Screwdriver", Inventory_Quantity = 4 }, database_id);
-                repository.SaveRecord<Tool>(new Tool { Tool_ID = 3, ToolName = "Flat-head Screwdriver", Inventory_Quantity = 1 }, database_id);
-                repository.SaveRecord<Tool>(new Tool { Tool_ID = 4, ToolName = "Allen Wrench", Inventory_Quantity = 30 }, database_id);
-                repository.SaveRecord<Tool>(new Tool { Tool_ID = 5, ToolName = "Pliers", Inventory_Quantity = 5 }, database_id);
-
-                //add sample LineItem records to the first database
-                repository2.SaveRecord<LineItem>(new LineItem { LineItem_ID = 1, Tool_ID = 7, Price = 19.95, Purchase_Quantity = 3 }, database_id);
-                repository2.SaveRecord<LineItem>(new LineItem { LineItem_ID = 2, Tool_ID = 2, Price = 1.50, Purchase_Quantity = 10 }, database_id);
-                repository2.SaveRecord<LineItem>(new LineItem { LineItem_ID = 3, Tool_ID = 10, Price = 10.00, Purchase_Quantity = 1 }, database_id);
-            }
-            else if (database_id == "Node2_DB")
-            {
-                //add sample Tool records to the second database
-                repository.SaveRecord<Tool>(new Tool { Tool_ID = 6, ToolName = "Level", Inventory_Quantity = 5 }, database_id);
-                repository.SaveRecord<Tool>(new Tool { Tool_ID = 7, ToolName = "Saw", Inventory_Quantity = 2 }, database_id);
-                repository.SaveRecord<Tool>(new Tool { Tool_ID = 8, ToolName = "Socket Wrench", Inventory_Quantity = 0 }, database_id);
-                repository.SaveRecord<Tool>(new Tool { Tool_ID = 9, ToolName = "Drill", Inventory_Quantity = 9 }, database_id);
-                repository.SaveRecord<Tool>(new Tool { Tool_ID = 10, ToolName = "Goggles", Inventory_Quantity = 9 }, database_id);
-
-                //add sample LineItem records to the second database
-                repository2.SaveRecord<LineItem>(new LineItem { LineItem_ID = 4, Tool_ID = 5, Price = 3.03, Purchase_Quantity = 5 }, database_id);
-                repository2.SaveRecord<LineItem>(new LineItem { LineItem_ID = 5, Tool_ID = 4, Price = 4.87, Purchase_Quantity = 33 }, database_id);
-                repository2.SaveRecord<LineItem>(new LineItem { LineItem_ID = 6, Tool_ID = 3, Price = 2.01, Purchase_Quantity = 2 }, database_id);
-            }
-
-        }
-
-    }
-
-    public interface IRecordRepository<T>
+   public interface IRecordRepository<T>
     {
        
         List<T> GetRecords<T>(string database_id);
@@ -98,17 +51,11 @@ namespace ExchangeOperatorImplementation
         }
     }
 
-
-
     public class Tool 
     {
         public int Tool_ID { get; set; }
         public string ToolName { get; set; }
         public int Inventory_Quantity { get; set; }
-
-      
-       
-
         public string Summary
         {
             get
@@ -118,14 +65,12 @@ namespace ExchangeOperatorImplementation
         }
     }
     
-    public class LineItem { 
-
+    public class LineItem {
 
         public int LineItem_ID { get; set; }
         public int Tool_ID { get; set; }
         public double Price { get; set; }
         public int Purchase_Quantity { get; set; }
-
 
         public string Summary
         {
@@ -134,5 +79,59 @@ namespace ExchangeOperatorImplementation
                 return $"{LineItem_ID} {Tool_ID} {Price} {Purchase_Quantity}";
             }
         }
+    }
+
+    class SampleRecords
+    {
+        IRecordRepository<Tool> repository = new ToolServiceRepository();
+        IRecordRepository<LineItem> repository2 = new LineItemServiceRepository();
+        public void createSampleRecords()
+        {
+
+            RemoveSampleRecords("Node1_DB");
+            RemoveSampleRecords("Node2_DB");
+            AddSampleRecords("Node1_DB");
+            AddSampleRecords("Node2_DB");
+        }
+
+        private void RemoveSampleRecords(String database_id)
+        {
+            repository.ClearTable<Tool>(database_id);
+            repository2.ClearTable<LineItem>(database_id);
+        }
+
+        private void AddSampleRecords(String database_id)
+        {
+            if (database_id == "Node1_DB")
+            {
+                //add sample Tool records to the first database
+                repository.SaveRecord<Tool>(new Tool { Tool_ID = 1, ToolName = "Hammer", Inventory_Quantity = 3 }, database_id);
+                repository.SaveRecord<Tool>(new Tool { Tool_ID = 2, ToolName = "Phillips-head Screwdriver", Inventory_Quantity = 4 }, database_id);
+                repository.SaveRecord<Tool>(new Tool { Tool_ID = 3, ToolName = "Flat-head Screwdriver", Inventory_Quantity = 1 }, database_id);
+                repository.SaveRecord<Tool>(new Tool { Tool_ID = 4, ToolName = "Allen Wrench", Inventory_Quantity = 30 }, database_id);
+                repository.SaveRecord<Tool>(new Tool { Tool_ID = 5, ToolName = "Pliers", Inventory_Quantity = 5 }, database_id);
+
+                //add sample LineItem records to the first database
+                repository2.SaveRecord<LineItem>(new LineItem { LineItem_ID = 1, Tool_ID = 7, Price = 19.95, Purchase_Quantity = 3 }, database_id);
+                repository2.SaveRecord<LineItem>(new LineItem { LineItem_ID = 2, Tool_ID = 2, Price = 1.50, Purchase_Quantity = 10 }, database_id);
+                repository2.SaveRecord<LineItem>(new LineItem { LineItem_ID = 3, Tool_ID = 10, Price = 10.00, Purchase_Quantity = 1 }, database_id);
+            }
+            else if (database_id == "Node2_DB")
+            {
+                //add sample Tool records to the second database
+                repository.SaveRecord<Tool>(new Tool { Tool_ID = 6, ToolName = "Level", Inventory_Quantity = 5 }, database_id);
+                repository.SaveRecord<Tool>(new Tool { Tool_ID = 7, ToolName = "Saw", Inventory_Quantity = 2 }, database_id);
+                repository.SaveRecord<Tool>(new Tool { Tool_ID = 8, ToolName = "Socket Wrench", Inventory_Quantity = 0 }, database_id);
+                repository.SaveRecord<Tool>(new Tool { Tool_ID = 9, ToolName = "Drill", Inventory_Quantity = 9 }, database_id);
+                repository.SaveRecord<Tool>(new Tool { Tool_ID = 10, ToolName = "Goggles", Inventory_Quantity = 9 }, database_id);
+
+                //add sample LineItem records to the second database
+                repository2.SaveRecord<LineItem>(new LineItem { LineItem_ID = 4, Tool_ID = 5, Price = 3.03, Purchase_Quantity = 5 }, database_id);
+                repository2.SaveRecord<LineItem>(new LineItem { LineItem_ID = 5, Tool_ID = 4, Price = 4.87, Purchase_Quantity = 33 }, database_id);
+                repository2.SaveRecord<LineItem>(new LineItem { LineItem_ID = 6, Tool_ID = 3, Price = 2.01, Purchase_Quantity = 2 }, database_id);
+            }
+
+        }
+
     }
 }

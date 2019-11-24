@@ -9,31 +9,58 @@ namespace ExchangeOperatorImplementation
     class Program
     {
         static void Main(string[] args)
-        {   
-            
-            SampleRecords sr = new SampleRecords();
-            sr.RemoveSampleRecords("Node1_DB");
-            sr.RemoveSampleRecords("Node2_DB");
-            sr.AddSampleRecords("Node1_DB");
-            sr.AddSampleRecords("Node2_DB");
-            
+        {
+            //add sample data to the two database nodes
+            new SampleRecords().createSampleRecords();
 
-            
+
+            //execute query on the two nodes, via the exchange operator, and combine the resuts
             String[] DatabaseConnectionIDs = { "Node1_DB", "Node2_DB" };
             ExchangeOperator xchg = new ExchangeOperator(DatabaseConnectionIDs);
+
+            //display database nodes prior to partitioning
+            string[] ToolTable_columnNames = { "Tool_ID", "ToolName", "Inventory_Quantity"};
+            xchg.ExecuteQuery("select * from Tool",ToolTable_columnNames );
+            Display.DisplayToolRecords("STATE OF NODE 1 TOOL RECORDS BEFORE PARTITIONING", xchg.QueryResults[0]);
+            Display.DisplayToolRecords("STATE OF NODE 2 TOOL RECORDS BEFORE PARTITIONING", xchg.QueryResults[1]);
+            string [] LineItemTable_columnNames = { "LineItem_ID", "Tool_ID", "Price", "Purchase_Quantity" };
+            xchg.ExecuteQuery("select * from LineItem", LineItemTable_columnNames);
+            Display.DisplayLineItemRecords("STATE OF NODE 1 LINE_ITEM RECORDS BEFORE PARTITIONING", xchg.QueryResults[0]);
+            Display.DisplayLineItemRecords("STATE OF NODE 2 LINE_ITEM RECORDS BEFORE PARTITIONING", xchg.QueryResults[1]);
+
             //hash partition Tool records
             IRecordRepository<Tool> toolRepository = new ToolServiceRepository();
             xchg.HashPartition<Tool>(toolRepository);
             IRecordRepository<LineItem> lineItemRepository = new LineItemServiceRepository();
             xchg.HashPartition<LineItem>(lineItemRepository);
-            xchg.ExecuteQuery("");
-            
-        }
 
+            //display database nodes after paritioning
+            xchg.ExecuteQuery("select * from Tool", ToolTable_columnNames);
+            Display.DisplayToolRecords("STATE OF NODE 1 TOOL RECORDS AFTER HASH PARTITIONING (H = TOOL_ID % N)", xchg.QueryResults[0]);
+            Display.DisplayToolRecords("STATE OF NODE 2 TOOL RECORDS AFTER HASH PARTITIONING (H = TOOL_ID % N)", xchg.QueryResults[1]);
+            xchg.ExecuteQuery("select * from LineItem", LineItemTable_columnNames);
+            Display.DisplayLineItemRecords("STATE OF NODE 1 LINE_ITEM RECORDS AFTER HASH PARTITIONING (H = TOOL_ID % N)", xchg.QueryResults[0]);
+            Display.DisplayLineItemRecords("STATE OF NODE 2 LINE_ITEM RECORDS AFTER HASH PARTITIONING (H = TOOL_ID % N)", xchg.QueryResults[1]);
+
+            //execute query concurrently on two nodes
+            string sql = "select * from Tool, LineItem where Tool.Tool_ID = LineItem.Tool_ID";
+            string [] QueryResults_columnNames = { "LineItem_ID", "Tool_ID", "ToolName", "Price", "Purchase_Quantity", "Inventory_Quantity" };
+            xchg.ExecuteQuery(sql, QueryResults_columnNames);
+            Console.WriteLine("THE FOLLOWING QUERY IS BEING EXECUTED CONCURRENTLY ON THE TWO DATABASE NODES VIA SEPARATE THREADS: " + sql + "\n");
+            
+            //display separate results from the two nodes
+            Display.DisplayQueryResults("NODE 1 RESULTS FROM QUERY", xchg.QueryResults[0]);
+            Display.DisplayQueryResults("NODE 2 RESULTS FROM QUERY", xchg.QueryResults[1]);
+
+            //combine the results and display
+            List<string[]> CombinedResults = xchg.CombineQueryResults();
+            Display.DisplayQueryResults("COMBINED RESULTS FROM QUERY", CombinedResults);
+
+
+            Console.Read();
+        }
     }
 
-  
-   
     class ExchangeOperator
     {
         //ids for the database connections listed in App.config
@@ -41,10 +68,8 @@ namespace ExchangeOperatorImplementation
         //array of threads
         Thread[] Threads;
         //query results from the various partitions
-        List<string[]>[] QueryResults;
+        public List<string[]>[] QueryResults;
        
-
-
         //constructor
         public ExchangeOperator(string[] DatabaseConnectionIDs)
         {   
@@ -68,7 +93,6 @@ namespace ExchangeOperatorImplementation
             int n = DatabaseConnectionIDs.Length;
             //go through each tool and add to appropirate partition/database/node
 
-
             foreach (T record in recordList)
             {
                 int PartitionKey = GetPartitionKey<T>(record);
@@ -84,34 +108,30 @@ namespace ExchangeOperatorImplementation
             return (int)PartitionKey;
         }
 
-        
-        //purpose - repartition data in nodes based on data range
-        public void RangePartition()
+        //purpose: combine query results produced from different threads in a single data structure
+        public List<string[]> CombineQueryResults()
         {
+            List<string[]> CombinedQueryResults = new List<string[]>();
+            foreach (List<string[]> QueryResult in this.QueryResults)
+            {
+                CombinedQueryResults.AddRange(QueryResult);
+            }
 
+            return CombinedQueryResults;
         }
-        //purpose - copy data from one node to other nodes
-        public void Broadcasting()
-        {
 
-        }
 
-        //purpose - send data from all nodes to a single node
-        public void SendAll()
-        {
-
-        }
-        
         //purpose: partition data, then execute query (as a separate thread) on each parition
         //resuts:
-        public void ExecuteQuery(string qry)
+        public void ExecuteQuery(string qry, string[] columnNames)
         {
-          
+            
+         
             //create a separate thread to execute the query on each data partition
             for(int i = 0; i < this.DatabaseConnectionIDs.Length; i++)
             {
                 int index = i;
-                this.Threads[i]= new Thread(() => { QueryResults[index] = ExecuteQueryOnPartition(this.DatabaseConnectionIDs[index], qry); });
+                this.Threads[i]= new Thread(() => { QueryResults[index] = ExecuteQueryOnPartition(this.DatabaseConnectionIDs[index], qry, columnNames); });
                 Threads[i].Start();
                 
             }
@@ -121,16 +141,16 @@ namespace ExchangeOperatorImplementation
             {
                 Threads[i].Join();
             }
-
-            Console.WriteLine("Donzo");
         }
 
         //Purpose: execute a qry on partition and store the results
         // each parition will be executed in its own thread
-        public List<string[]> ExecuteQueryOnPartition(string database_id, string qry)
+        public List<string[]> ExecuteQueryOnPartition(string database_id, string qry, string[] columnNames)
         {
-          return SqliteDataAccess.ExecuteQuery(database_id, qry);
+          return SqliteDataAccess.ExecuteQuery(database_id, qry, columnNames);
         }
+
+        
         
     }
 }

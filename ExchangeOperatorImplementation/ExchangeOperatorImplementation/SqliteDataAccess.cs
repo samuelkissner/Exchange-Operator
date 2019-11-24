@@ -13,8 +13,7 @@ namespace ExchangeOperatorImplementation
     public class SqliteDataAccess
     {
 
-
-        public static List<string[]> ExecuteQuery(string database_id, string sql)
+        public static List<string[]> ExecuteQuery(string database_id, string sql, string[] columnNames)
         {
             List<string[]> resultList = new List<string[]>();
             
@@ -23,31 +22,30 @@ namespace ExchangeOperatorImplementation
                 cnn.Open();
                 using (SQLiteCommand fmd = cnn.CreateCommand())
                 {
-                    fmd.CommandText = "select * from Tool, LineItem where Tool.Tool_ID = LineItem.Tool_ID";
+                    fmd.CommandText =sql;
                     fmd.CommandType = CommandType.Text;
                     SQLiteDataReader r = fmd.ExecuteReader();
+
+                    //add column names to list
+                    //resultList.Add(columnNames);
+
+                    //retrieve row data and add to list
                     while (r.Read())
                     {
 
-                        string[] row = new string[6];
-                        row[0] = r["LineItem_ID"].ToString();
-                        row[1] = r["Tool_ID"].ToString();
-                        row[2] = r["ToolName"].ToString();
-                        row[3] = r["Price"].ToString();
-                        row[4] = r["Purchase_Quantity"].ToString();
-                        row[5] = r["Inventory_Quantity"].ToString();
-                        resultList.Add(row);
+                        string[] row = new string[columnNames.Length];
+                        for(int i = 0; i < columnNames.Length; i++)
+                        {
+                            row[i] = r[columnNames[i]].ToString();
+                        }
+
+                       resultList.Add(row);
                     }
                 }
             }
             return resultList;
         }
                 
-            
-            
-
-            
-
         public static List<T> LoadRecords<T>(string database_id, string sql)
         {
             using (IDbConnection cnn = new SQLiteConnection(LoadConnectionString(database_id)))
